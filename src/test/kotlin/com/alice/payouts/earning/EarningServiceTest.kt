@@ -1,9 +1,7 @@
 package com.alice.payouts.earning
 
+import com.alice.payouts.Database
 import com.alice.payouts.auth.AuthOperator
-import com.zaxxer.hikari.HikariConfig
-import com.zaxxer.hikari.HikariDataSource
-import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.deleteAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -12,39 +10,16 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.testcontainers.containers.PostgreSQLContainer
-import org.testcontainers.junit.jupiter.Container
-import org.testcontainers.junit.jupiter.Testcontainers
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
-import org.jetbrains.exposed.sql.Database as ExposedDatabase
 
-@Testcontainers
 class EarningServiceTest {
 
     companion object {
-        @Container
-        @JvmStatic
-        val postgres = PostgreSQLContainer("postgres:16-alpine").apply {
-            withDatabaseName("payouts")
-            withUsername("payouts")
-            withPassword("payouts")
-        }
-
         @JvmStatic
         @BeforeAll
-        fun setupDatabase() {
-            postgres.start()
-            val ds = HikariDataSource(HikariConfig().apply {
-                jdbcUrl = postgres.jdbcUrl
-                username = postgres.username
-                password = postgres.password
-                maximumPoolSize = 4
-            })
-            Flyway.configure().dataSource(ds).load().migrate()
-            ExposedDatabase.connect(ds)
-        }
+        fun setupDatabase() = Database.init()
     }
 
     private val repository = EarningRepository()

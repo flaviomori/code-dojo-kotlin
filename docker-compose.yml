@@ -12,3 +12,57 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+
+  # Postgres dedicado da suíte de testes — isolado do banco do app, sem porta publicada
+  # (evita conflito na 5432). Um `make test` nunca toca os dados que o dev olha no app.
+  postgres-test:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: payouts
+      POSTGRES_PASSWORD: payouts
+      POSTGRES_DB: payouts
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U payouts"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # App Ktor: JDK roda dentro do container; conecta no Postgres pela rede do compose.
+  app:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/payouts
+      DATABASE_USER: payouts
+      DATABASE_PASSWORD: payouts
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+      - gradle-cache:/root/.gradle
+      - app-build:/app/build
+    command: ./gradlew run --console=plain
+
+  # Suíte de testes: mesma imagem, aponta para o postgres-test. Sem socket, sem host-override.
+  test:
+    build: .
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres-test:5432/payouts
+      DATABASE_USER: payouts
+      DATABASE_PASSWORD: payouts
+    volumes:
+      - .:/app
+      - gradle-cache:/root/.gradle
+      - app-build:/app/build
+    # cleanTest força os testes a rodar sempre (a compilação segue cacheada) — sem isso,
+    # o cache incremental do Gradle marca :test UP-TO-DATE e a suíte não re-executa.
+    command: ./gradlew cleanTest test --console=plain
+
+volumes:
+  gradle-cache:
+  app-build:

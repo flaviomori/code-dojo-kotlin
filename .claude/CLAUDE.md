@@ -11,18 +11,19 @@ Sistema interno de repasses a médicos credenciados.
   - **Repository** — acesso a banco via Exposed (`transaction {}`).
 - **Auth**: header `X-Operator-Id` obrigatório. Extraído via `call.requireAuth()`.
 - **Exceções**: `NotFoundException`, `BadRequestException` → `StatusPages` traduz para HTTP.
-- **Testes**: Testcontainers (Postgres real). Sem H2.
+- **Testes**: Postgres real via compose (serviço `postgres-test`). Sem H2.
 - **Money**: `BigDecimal` (serializado como `String` nos DTOs).
 
 ## Rodando local
 
+Pré-requisito: Docker (e Git). O JDK roda dentro do container.
+
 ```bash
-docker compose up -d
-./gradlew run
+make app    # sobe Postgres + app em :8080
 ```
 
 ## Testes
 
 ```bash
-./gradlew test
+make test   # roda a suíte contra o postgres-test
 ```

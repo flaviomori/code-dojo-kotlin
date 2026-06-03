@@ -1,0 +1,8 @@
+# O Dockerfile não copia código (bind-mount em runtime); isto só enxuga o build context.
+.git/
+.gradle/
+.kotlin/
+build/
+.idea/
+*.iml
+.DS_Store

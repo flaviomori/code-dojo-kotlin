@@ -4,11 +4,16 @@ Sistema de repasses a médicos credenciados — Kotlin/Ktor + Postgres.
 
 ## Setup
 
+Pré-requisitos: **Docker** e **Git**. Nada mais — o JDK roda dentro do container.
+
 1. `git clone` este repo.
-2. `docker compose up -d` (sobe Postgres na porta 5432).
-3. `./gradlew run`.
-4. Smoke: `curl -H "X-Operator-Id: 99999999-9999-9999-9999-999999999999" http://localhost:8080/practitioners/11111111-1111-1111-1111-111111111111`
-5. Rodar os testes: `./gradlew test`.
+2. `make app` — sobe Postgres + app em `http://localhost:8080`. A 1ª execução baixa Gradle e dependências (~5-10 min); as seguintes são rápidas (cache em volume).
+3. Smoke (em outro terminal, com o app de pé): `make smoke`.
+4. Testes: `make test`.
+
+Comandos: `make app`, `make test`, `make smoke`, `make sh` (shell para Gradle ad-hoc), `make logs`, `make down`.
+
+Loop de edição: edite `src/` no host, `Ctrl-C` no `make app` e rode `make app` de novo (sem hot-reload).
 
 ## Endpoints disponíveis
 
